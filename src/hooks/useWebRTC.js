@@ -94,7 +94,7 @@ export default function useWebRTC (roomID) {
 
   useEffect(() => {
     async function setRemoteMedia ({ peerID, sessionDescription: remoteDescription }) {
-      await peerConnections.current[peerID].setRemoteDescription(
+      await peerConnections.current[peerID]?.setRemoteDescription(
         new RTCSessionDescription(remoteDescription),
       );
 
@@ -185,6 +185,7 @@ export default function useWebRTC (roomID) {
 
   return {
     clients,
-    provideMediaRef
+    provideMediaRef,
+    stream: localMediaStream.current
   };
 }

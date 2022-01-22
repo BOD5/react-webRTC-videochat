@@ -20,17 +20,17 @@ function layout(clientsNumber = 1) {
         width: '100%',
         height,
       }];
-      return row.map(() => ({
-        width: '50%',
-        height,
-      }));
     }
+    return row.map(() => ({
+      width: '50%',
+      height,
+    }));
   }).flat();
 }
 
 export default function Room () {
   const { id: roomID } = useParams();
-  const { clients, provideMediaRef } = useWebRTC(roomID);
+  const { clients, provideMediaRef, stream } = useWebRTC(roomID);
   const videoLayout = layout(clients.length);
   
   console.log('roomID = ', roomID);
@@ -46,20 +46,24 @@ export default function Room () {
     }}>
       {clients.map((clientID, index) => {
         return (
-          <div key={clientID} style={videoLayout[index]} id={clientID}>
-            <video
-              width='100%'
-              height='100%'
-              ref={instance => {
-                provideMediaRef(clientID, instance);
-              }}
-              autoPlay
-              playsInline
-              muted={clientID === LOCAL_VIDEO}
-            />
-          </div>
+            <div key={clientID} style={videoLayout[index]} id={clientID}>
+              <video
+                width='100%'
+                height='100%'
+                ref={instance => {
+                  provideMediaRef(clientID, instance);
+                }}
+                autoPlay
+                playsInline
+                muted={clientID === LOCAL_VIDEO}
+              />
+            </div>
         );
       })}
+      <button onClick={() => {
+        console.log(' - 123:63 >', stream); // eslint-disable-line no-console
+        stream.getVideoTracks()[0].enabled = !stream.getVideoTracks()[0].enabled;        
+      }}> Офф камера</button>
     </div>
   );
 }
