@@ -53,6 +53,28 @@ io.on('connection', (socket) => {
   });
 
   function leaveRoom () {
+    removeUserFromRoom(socket.id);
+    // const { rooms } = socket;
+
+    // Array.from(rooms)
+    //   .forEach((roomID) => {
+    //     const clients = Array.from(io.sockets.adapter.rooms.get(roomID) || []);
+    //     clients.forEach((clientID) => {
+    //       io.to(clientID).emit(ACTIONS.REMOVE_PEER, {
+    //         peerID: socket.id,
+    //       });
+
+    //       socket.emit(ACTIONS.REMOVE_PEER, {
+    //         peerID: clientID,
+    //       });
+    //     });
+
+    //     socket.leave(roomID);
+    //   });
+    shareRoomsInfo();
+  }
+
+  function removeUserFromRoom (userID) {
     const { rooms } = socket;
 
     Array.from(rooms)
@@ -60,18 +82,22 @@ io.on('connection', (socket) => {
         const clients = Array.from(io.sockets.adapter.rooms.get(roomID) || []);
         clients.forEach((clientID) => {
           io.to(clientID).emit(ACTIONS.REMOVE_PEER, {
-            peerID: socket.id,
+            peerID: userID,
           });
 
           socket.emit(ACTIONS.REMOVE_PEER, {
-            peerID: clientID,
+            peerID: userID,
           });
         });
 
         socket.leave(roomID);
       });
-    shareRoomsInfo();
   }
+
+  socket.on(ACTIONS.REMOVE_USER, ({ clientID }) => {
+    removeUserFromRoom(clientID);
+    io.to(clientID).emit(ACTIONS.USER_REMOVED);
+  })
 
   socket.on(ACTIONS.LEAVE, leaveRoom);
   socket.on('disconnecting', leaveRoom);
@@ -89,6 +115,13 @@ io.on('connection', (socket) => {
       iceCandidate,
     });
   });
+});
+
+// for deploy
+const publicPath = path.join(__dirname, 'build');
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(publicPath, 'index.html'));
 });
 
 server.listen(PORT, () => {

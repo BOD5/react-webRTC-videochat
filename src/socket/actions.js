@@ -8,7 +8,8 @@ const ACTIONS = {
   RELAY_ICE: 'relay-sdp',
   ICE_CANDIDATE: 'ice-candidate',
   SESSION_DESCRIPTION: 'session-description',
-  
+  REMOVE_USER: 'remove-user',
+  USER_REMOVED: 'user-removed',
 };
 
 module.exports = ACTIONS;

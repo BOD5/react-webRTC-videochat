@@ -1,5 +1,9 @@
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
+
+import socket from "../../socket";
 import useWebRTC, { LOCAL_VIDEO } from "../../hooks/useWebRTC";
+import ACTIONS from "../../socket/actions";
+import { useEffect } from "react";
 
 function layout(clientsNumber = 1) {
   const pairs = Array.from({ length: clientsNumber })
@@ -36,6 +40,20 @@ export default function Room () {
   console.log('roomID = ', roomID);
   console.log('clietnts ', clients);
 
+  console.log(' - socket:43 >', socket); // eslint-disable-line no-console
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    socket.on(ACTIONS.USER_REMOVED, () => {
+      alert("You`re removed from this room");
+      navigate('/');
+    })
+    return () => {
+      socket.off(ACTIONS.USER_REMOVED);
+    }
+  }, []);
+
   return (
     <div style={{
       display: 'flex',
@@ -47,6 +65,7 @@ export default function Room () {
       {clients.map((clientID, index) => {
         return (
             <div key={clientID} style={videoLayout[index]} id={clientID}>
+              <div>
               <video
                 width='100%'
                 height='100%'
@@ -57,6 +76,13 @@ export default function Room () {
                 playsInline
                 muted={clientID === LOCAL_VIDEO}
               />
+              </div>
+            {(clientID !== LOCAL_VIDEO) ?
+              <button onClick={() => {
+                socket.emit(ACTIONS.REMOVE_USER, {clientID});
+              }}>Remove User</button>
+              : ''  
+            }            
             </div>
         );
       })}
