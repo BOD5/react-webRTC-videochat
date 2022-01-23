@@ -25,6 +25,7 @@ function shareRoomsInfo() {
 
 io.on('connection', (socket) => {
   shareRoomsInfo();
+  console.log(' - socket.id:28 >', socket.id); // eslint-disable-line no-console
 
   socket.on(ACTIONS.JOIN, (config) => {
     const { room: roomID } = config;
@@ -54,23 +55,7 @@ io.on('connection', (socket) => {
 
   function leaveRoom () {
     removeUserFromRoom(socket.id);
-    // const { rooms } = socket;
-
-    // Array.from(rooms)
-    //   .forEach((roomID) => {
-    //     const clients = Array.from(io.sockets.adapter.rooms.get(roomID) || []);
-    //     clients.forEach((clientID) => {
-    //       io.to(clientID).emit(ACTIONS.REMOVE_PEER, {
-    //         peerID: socket.id,
-    //       });
-
-    //       socket.emit(ACTIONS.REMOVE_PEER, {
-    //         peerID: clientID,
-    //       });
-    //     });
-
-    //     socket.leave(roomID);
-    //   });
+    
     shareRoomsInfo();
   }
 
@@ -95,7 +80,7 @@ io.on('connection', (socket) => {
   }
 
   socket.on(ACTIONS.REMOVE_USER, ({ clientID }) => {
-    removeUserFromRoom(clientID);
+    // removeUserFromRoom(clientID);
     io.to(clientID).emit(ACTIONS.USER_REMOVED);
   })
 

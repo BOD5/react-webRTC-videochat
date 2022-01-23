@@ -4,43 +4,30 @@ import socket from "../../socket";
 import useWebRTC, { LOCAL_VIDEO } from "../../hooks/useWebRTC";
 import ACTIONS from "../../socket/actions";
 import { useEffect } from "react";
+import { styled } from '@mui/material/styles';
+import Paper from '@mui/material/Paper';
+import Grid from '@mui/material/Grid';
+import { IconButton } from "@mui/material";
+import VideocamIcon from '@mui/icons-material/Videocam';
+import VideocamOffIcon from '@mui/icons-material/VideocamOff';
+import MicIcon from '@mui/icons-material/Mic';
+import MicOffIcon from '@mui/icons-material/MicOff';
+import VolumeOffIcon from '@mui/icons-material/VolumeOff';
+import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 
-function layout(clientsNumber = 1) {
-  const pairs = Array.from({ length: clientsNumber })
-    .reduce((acc, next, index,arr) => {
-      if (index % 2 === 0) {
-        acc.push(arr.slice(index, index + 2));
-      }
-
-      return acc;
-    }, []);
-
-  const rowsNumber = pairs.length;
-  const height = `${100 / rowsNumber}%`;
-
-  return pairs.map((row, index, arr) => {
-    if (index === arr.length - 1 && row.length === 1) {
-      return [{
-        width: '100%',
-        height,
-      }];
-    }
-    return row.map(() => ({
-      width: '50%',
-      height,
-    }));
-  }).flat();
-}
+const Item = styled(Paper)(({ theme }) => ({
+  ...theme.typography.body2,
+  padding: theme.spacing(1),
+  textAlign: 'center',
+  color: theme.palette.text.secondary,
+}));
 
 export default function Room () {
   const { id: roomID } = useParams();
   const { clients, provideMediaRef, stream } = useWebRTC(roomID);
-  const videoLayout = layout(clients.length);
   
   console.log('roomID = ', roomID);
   console.log('clietnts ', clients);
-
-  console.log(' - socket:43 >', socket); // eslint-disable-line no-console
 
   const navigate = useNavigate();
 
@@ -54,42 +41,72 @@ export default function Room () {
     }
   }, []);
 
+  const videoIcon = () => (stream.getVideoTracks()[0].enabled === false) ? <VideocamIcon /> : <VideocamOffIcon />;
+
+  const audioIcon = () => (stream.getAudioTracks()[0].enabled === false) ? <MicIcon /> : <MicOffIcon />;
+
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexWrap: 'wrap',
-      height: '100vh',
-    }}>
+    <Grid container spacing={2}>
       {clients.map((clientID, index) => {
         return (
-            <div key={clientID} style={videoLayout[index]} id={clientID}>
-              <div>
-              <video
-                width='100%'
-                height='100%'
-                ref={instance => {
-                  provideMediaRef(clientID, instance);
-                }}
-                autoPlay
-                playsInline
-                muted={clientID === LOCAL_VIDEO}
-              />
-              </div>
-            {(clientID !== LOCAL_VIDEO) ?
-              <button onClick={() => {
-                socket.emit(ACTIONS.REMOVE_USER, {clientID});
-              }}>Remove User</button>
-              : ''  
-            }            
-            </div>
+          <Grid container item xs={4} key={clientID} id={clientID}>
+            <Grid item>
+              <Item>
+                <video
+                  width='100%'
+                  height='100%'
+                  ref={instance => {
+                    provideMediaRef(clientID, instance);
+                  }}
+                  autoPlay
+                  playsInline
+                  muted={clientID === LOCAL_VIDEO}
+                />
+              </Item>
+            </Grid>
+            {
+              (clientID === LOCAL_VIDEO) ?
+              <Grid container item xl direction="row"
+                justifyContent="center"
+                alignItems="center">
+                <Grid item>
+                  <IconButton color="primary" aria-label="upload picture" component="span" onClick={() => {
+                    stream.getVideoTracks()[0].enabled = !stream.getVideoTracks()[0].enabled
+                  }
+                    }>
+                    { videoIcon() }
+                  </IconButton>
+                </Grid>
+                <Grid item>
+                  <IconButton color="primary" aria-label="upload picture" component="span" onClick={() => {
+                    stream.getAudioTracks()[0].enabled = !stream.getAudioTracks()[0].enabled
+                  }
+                    }>
+                    { audioIcon() }
+                  </IconButton>
+                </Grid>
+              </Grid>
+              :
+              <Grid container item xl direction="row"
+                justifyContent="center"
+                alignItems="center">
+                <Grid item>
+                  <IconButton color="primary" aria-label="upload picture" component="span">
+                    <VolumeOffIcon />
+                  </IconButton>
+                </Grid>
+                <Grid item>
+                  <IconButton color="primary" aria-label="upload picture" component="span" onClick={() => {
+                    socket.emit(ACTIONS.REMOVE_USER, { clientID })
+                  }}>
+                    <PersonRemoveIcon />
+                  </IconButton>
+                </Grid>
+              </Grid>
+            }
+          </Grid>
         );
       })}
-      <button onClick={() => {
-        console.log(' - 123:63 >', stream); // eslint-disable-line no-console
-        stream.getVideoTracks()[0].enabled = !stream.getVideoTracks()[0].enabled;        
-      }}> Офф камера</button>
-    </div>
+    </Grid>
   );
 }
