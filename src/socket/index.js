@@ -7,6 +7,6 @@ const options = {
   transports: ['websocket'],
 }
 
-const socket = io('/',options);
+const socket = io('https://react-web-rtc-videochat-gy49irhnb-bod5.vercel.app/',options);
 
 export default socket;

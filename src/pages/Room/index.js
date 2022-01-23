@@ -77,13 +77,13 @@ export default function Room () {
                 muted={clientID === LOCAL_VIDEO}
               />
               </div>
-            {(clientID !== LOCAL_VIDEO) ?
-              <button onClick={() => {
-                socket.emit(ACTIONS.REMOVE_USER, {clientID});
-              }}>Remove User</button>
-              : ''  
-            }            
-            </div>
+                {(clientID !== LOCAL_VIDEO) ?
+                  <button onClick={() => {
+                    socket.emit(ACTIONS.REMOVE_USER, {clientID});
+                  }}>Remove User</button>
+                  : ''  
+                }
+              </div>
         );
       })}
       <button onClick={() => {
